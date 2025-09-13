@@ -1,7 +1,8 @@
 body {
     font-family: 'Inter', sans-serif;
-    background-color: #f0f4f8;
-    transition: background-color 0.3s ease;
+    background: url(hay.jpg);
+    background-repeat: no-repeat;
+    background-size: cover;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -18,7 +19,7 @@ body {
 .weather-card {
     background: #ffffff;
     border-radius: 1.5rem;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     padding: 2.5rem;
     text-align: center;
@@ -26,7 +27,7 @@ body {
 
 .weather-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 15);
 }
 
 .main-title {
@@ -61,18 +62,18 @@ body {
     flex-grow: 1;
     padding: 0.75rem;
     border-radius: 0.75rem;
-    border: 1px solid #d1d5db;
+    border: 1px solid #014421;
     outline: none;
-    color: #374151;
+    color: #014421;
 }
 
 .input-field:focus {
     border-color: transparent;
-    box-shadow: 0 0 0 2px #60a5fa;
+    box-shadow: 0 0 0 2px #177245;
 }
 
 .search-button {
-    background-color: #3b82f6;
+    background-color: #177245;
     color: #ffffff;
     font-weight: 600;
     padding: 0.75rem 1.5rem;
@@ -82,7 +83,7 @@ body {
 }
 
 .search-button:hover {
-    background-color: #2563eb;
+    background-color: #014421;
     transform: scale(1.05);
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
 }
@@ -160,15 +161,15 @@ body {
 }
 
 .forecast-item {
-    background-color: #f7f9fc;
+    background-color: #D0F0C0;
     border-radius: 1rem;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 3);
     padding: 1rem;
     text-align: center;
 }
 
 .forecast-day {
-    font-weight: 600;
+    font-weight: 1000;
     color: #374151;
 }
 
