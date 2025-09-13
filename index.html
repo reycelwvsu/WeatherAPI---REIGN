@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Weather App</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="weather-card">
+
+            <h1 class="main-title">Weather App</h1>
+            <p class="subtitle">Enter a city to see the current weather.</p>
+            <div class="search-container">
+                <input type="text" id="cityInput" placeholder="e.g., London, Tokyo, New York" class="input-field">
+                <button id="searchButton" class="search-button">Get Weather</button>
+            </div>
+
+            <div id="loading" class="loading-spinner">
+                <div class="spinner"></div>
+            </div>
+
+            <div id="weatherDisplay" class="weather-display">
+                <div style="margin-bottom: 2rem;">
+                    <h2 id="cityName" class="city-name"></h2>
+                    <p id="temperature" class="temperature"></p>
+                    <p id="description" class="description"></p>
+                    <p id="wind" class="wind"></p>
+                </div>
+
+                <div id="forecast" class="forecast-grid">
+                </div>
+            </div>
+
+            <div id="errorMessage" class="error-message">
+                <p id="errorText"></p>
+            </div>
+
+        </div>
+        
+            <footer class="footer">
+                © Bartonico, Ellieza Mae | Hubag, Ian Marvin | Mendiola, Reycel - BSIT 3A
+            </footer>
+    </div>
+
+    <script>
+        const cityInput = document.getElementById('cityInput');
+        const searchButton = document.getElementById('searchButton');
+        const weatherDisplay = document.getElementById('weatherDisplay');
+        const loadingSpinner = document.getElementById('loading');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+
+        async function fetchWeather(city) {
+            if (!city) {
+                showError('Please enter a city name.');
+                return;
+            }
+
+            loadingSpinner.style.display = 'flex';
+            weatherDisplay.style.display = 'none';
+            errorMessage.style.display = 'none';
+
+            try {
+                const geoApiUrl = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`;
+                const geoResponse = await fetch(geoApiUrl);
+                const geoData = await geoResponse.json();
+
+                if (geoData.length === 0) {
+                    showError('City not found. Please try a more specific name.');
+                    return;
+                }
+
+                const { lat, lon } = geoData[0];
+                const cityName = geoData[0].display_name.split(',')[0];
+
+                const weatherApiUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=temperature_2m_max,temperature_2m_min,windspeed_10m_max,weathercode&timezone=auto`;
+                const weatherResponse = await fetch(weatherApiUrl);
+                const weatherData = await weatherResponse.json();
+
+                if (weatherData.current_weather) {
+                    displayWeather(weatherData, cityName);
+                } else {
+                    showError('Failed to retrieve weather data for this city.');
+                }
+            } catch (error) {
+                showError('An error occurred. Please try again later.');
+                console.error('Fetch error:', error);
+            } finally {
+                loadingSpinner.style.display = 'none';
+            }
+        }
+
+        function getWeatherDescription(code) {
+            const descriptions = {
+                0: 'Clear sky', 1: 'Mainly clear', 2: 'Partly cloudy', 3: 'Overcast', 45: 'Fog',
+                48: 'Depositing rime fog', 51: 'Light drizzle', 53: 'Moderate drizzle', 55: 'Dense drizzle',
+                56: 'Light freezing drizzle', 57: 'Dense freezing drizzle', 61: 'Slight rain',
+                63: 'Moderate rain', 65: 'Heavy rain', 66: 'Light freezing rain', 67: 'Heavy freezing rain',
+                71: 'Slight snow fall', 73: 'Moderate snow fall', 75: 'Heavy snow fall', 77: 'Snow grains',
+                80: 'Slight showers', 81: 'Moderate showers', 82: 'Violent showers', 85: 'Slight snow showers',
+                86: 'Heavy snow showers', 95: 'Thunderstorm', 96: 'Thunderstorm with slight hail',
+                99: 'Thunderstorm with heavy hail'
+            };
+            return descriptions[code] || 'Weather condition not available';
+        }
+
+        function displayWeather(data, city) {
+            const currentWeather = data.current_weather;
+            const dailyData = data.daily;
+
+            document.getElementById('cityName').innerText = city;
+            document.getElementById('temperature').innerText = `${Math.round(currentWeather.temperature)}°C`;
+            document.getElementById('description').innerText = getWeatherDescription(currentWeather.weathercode);
+            document.getElementById('wind').innerText = `Wind: ${currentWeather.windspeed} km/h`;
+
+            const forecastContainer = document.getElementById('forecast');
+            forecastContainer.innerHTML = '';
+            for (let i = 0; i < 3; i++) {
+                const date = new Date(dailyData.time[i]);
+                const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
+                const forecastItem = document.createElement('div');
+                forecastItem.className = 'forecast-item';
+                forecastItem.innerHTML = `
+                    <p class="forecast-day">${dayOfWeek}</p>
+                    <p class="forecast-temp">${Math.round(dailyData.temperature_2m_max[i])}° / ${Math.round(dailyData.temperature_2m_min[i])}°</p>
+                    <p class="forecast-desc">${getWeatherDescription(dailyData.weathercode[i])}</p>
+                `;
+                forecastContainer.appendChild(forecastItem);
+            }
+
+            weatherDisplay.style.display = 'block';
+        }
+
+        function showError(message) {
+            errorText.innerText = message;
+            errorMessage.style.display = 'block';
+            weatherDisplay.style.display = 'none';
+        }
+
+        searchButton.addEventListener('click', () => {
+            const city = cityInput.value.trim();
+            fetchWeather(city);
+        });
+
+        cityInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                const city = cityInput.value.trim();
+                fetchWeather(city);
+            }
+        });
+
+        fetchWeather('Berlin');
+    </script>
+</body>
+
+</html>
