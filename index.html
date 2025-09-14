@@ -43,10 +43,10 @@
             </div>
 
         </div>
-        
-            <footer class="footer">
-                © Bartonico, Ellieza Mae | Hubag, Ian Marvin | Mendiola, Reycel - BSIT 3A
-            </footer>
+
+        <footer class="footer">
+            © Bartonico, Ellieza Mae | Hubag, Ian Marvin | Mendiola, Reycel - BSIT 3A
+        </footer>
     </div>
 
     <script>
@@ -111,27 +111,79 @@
             return descriptions[code] || 'Weather condition not available';
         }
 
+        function getWeatherInfo(wmoCode) {
+            const descriptions = {
+                // Clear and pleasant
+                0: { description: 'Clear sky', color: 'bg-blue-300' },
+                1: { description: 'Mainly clear', color: 'bg-blue-300' },
+                2: { description: 'Partly cloudy', color: 'bg-blue-200' },
+                // Cloudy and overcast
+                3: { description: 'Overcast', color: 'bg-gray-400' },
+                45: { description: 'Fog', color: 'bg-gray-300' },
+                48: { description: 'Depositing rime fog', color: 'bg-gray-300' },
+                // Drizzle and light rain
+                51: { description: 'Light drizzle', color: 'bg-blue-400' },
+                53: { description: 'Moderate drizzle', color: 'bg-blue-500' },
+                55: { description: 'Dense drizzle', color: 'bg-blue-600' },
+                56: { description: 'Light freezing drizzle', color: 'bg-blue-700' },
+                57: { description: 'Dense freezing drizzle', color: 'bg-blue-800' },
+                // Rain and showers
+                61: { description: 'Slight rain', color: 'bg-blue-400' },
+                63: { description: 'Moderate rain', color: 'bg-blue-500' },
+                65: { description: 'Heavy rain', color: 'bg-blue-600' },
+                66: { description: 'Light freezing rain', color: 'bg-blue-700' },
+                67: { description: 'Heavy freezing rain', color: 'bg-blue-800' },
+                80: { description: 'Slight showers', color: 'bg-blue-400' },
+                81: { description: 'Moderate showers', color: 'bg-blue-500' },
+                82: { description: 'Violent showers', color: 'bg-blue-600' },
+                // Snow
+                71: { description: 'Slight snow fall', color: 'bg-white-100' },
+                73: { description: 'Moderate snow fall', color: 'bg-white-200' },
+                75: { description: 'Heavy snow fall', color: 'bg-white-300' },
+                77: { description: 'Snow grains', color: 'bg-white-200' },
+                85: { description: 'Slight snow showers', color: 'bg-white-100' },
+                86: { description: 'Heavy snow showers', color: 'bg-white-200' },
+                // Thunderstorms and hail
+                95: { description: 'Thunderstorm', color: 'bg-red-500' },
+                96: { description: 'Thunderstorm with slight hail', color: 'bg-red-600' },
+                99: { description: 'Thunderstorm with heavy hail', color: 'bg-red-700' },
+            };
+
+            const unknown = { description: 'Weather condition not available', color: 'bg-gray-500' };
+            return descriptions[wmoCode] || unknown;
+        }
         function displayWeather(data, city) {
             const currentWeather = data.current_weather;
             const dailyData = data.daily;
 
+            const currentInfo = getWeatherInfo(currentWeather.weathercode);
+
+            const weatherDisplay = document.getElementById('weatherDisplay');
+
             document.getElementById('cityName').innerText = city;
             document.getElementById('temperature').innerText = `${Math.round(currentWeather.temperature)}°C`;
-            document.getElementById('description').innerText = getWeatherDescription(currentWeather.weathercode);
+            document.getElementById('description').innerText = currentInfo.description;
             document.getElementById('wind').innerText = `Wind: ${currentWeather.windspeed} km/h`;
 
             const forecastContainer = document.getElementById('forecast');
             forecastContainer.innerHTML = '';
+
             for (let i = 0; i < 3; i++) {
                 const date = new Date(dailyData.time[i]);
                 const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'short' });
+                const weatherCode = dailyData.weathercode[i];
+
+                const forecastInfo = getWeatherInfo(weatherCode);
+
                 const forecastItem = document.createElement('div');
-                forecastItem.className = 'forecast-item';
+
+                forecastItem.className = `forecast-item ${forecastInfo.color}`;
+
                 forecastItem.innerHTML = `
-                    <p class="forecast-day">${dayOfWeek}</p>
-                    <p class="forecast-temp">${Math.round(dailyData.temperature_2m_max[i])}° / ${Math.round(dailyData.temperature_2m_min[i])}°</p>
-                    <p class="forecast-desc">${getWeatherDescription(dailyData.weathercode[i])}</p>
-                `;
+            <p class="forecast-day">${dayOfWeek}</p>
+            <p class="forecast-temp">${Math.round(dailyData.temperature_2m_max[i])}° / ${Math.round(dailyData.temperature_2m_min[i])}°</p>
+            <p class="forecast-desc">${forecastInfo.description}</p>
+        `;
                 forecastContainer.appendChild(forecastItem);
             }
 
